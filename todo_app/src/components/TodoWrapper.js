@@ -1,63 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Todo } from "./Todo";
 import { TodoForm } from "./TodoForm";
 import { v4 as uuidv4 } from "uuid";
-import { EditTodoForm } from "./EditTodoForm";
+
+import {
+  createNewTodo,
+  deleteTodo,
+  getTodo,
+  updateCurrentTodo,
+} from "../services/todoService";
 
 export const TodoWrapper = () => {
   const [todos, setTodos] = useState([]);
+  const [fetching, setFetching] = useState(false);
 
-  const addTodo = (todo) => {
-    setTodos([
-      ...todos,
-      { id: uuidv4(), task: todo, completed: false, isEditing: false },
-    ]);
+  const addTodo = async (task) => {
+    try {
+      let newTodo = {
+        id: uuidv4(),
+        task,
+        isCompleted: false,
+      };
+      const res = await createNewTodo(newTodo);
+      console.log("check res:", res);
+      if (res && res.success === true) {
+        // setFetching(true);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const deleteTodo = (id) => setTodos(todos.filter((todo) => todo.id !== id));
-
-  const toggleComplete = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+  const removeTodo = (todo) => {
+    const { id } = todo;
+    deleteTodo(id);
+    setFetching(true);
   };
 
-  const editTodo = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, isEditing: !todo.isEditing } : todo
-      )
-    );
+  const getTodos = async () => {
+    try {
+      const res = await getTodo();
+      if (res) {
+        setTodos(res.data);
+      }
+    } catch (error) {
+      console.error("Error with message ", error.message);
+      throw error;
+    }
   };
 
-  const editTask = (task, id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, task, isEditing: !todo.isEditing } : todo
-      )
-    );
+  const toggleComplete = (todo) => {
+    const { id } = todo;
+    console.log(todo);
+    updateCurrentTodo(id, { id: todo.id, task: todo.task, isCompleted: true });
+    setFetching(true);
   };
 
+  useEffect(() => {
+    getTodos();
+  }, [fetching]);
   return (
     <div className="TodoWrapper">
       <h1>Get Things Done !</h1>
       <TodoForm addTodo={addTodo} />
       {/* display todos */}
-      {todos.map((todo) =>
-        todo.isEditing ? (
-          <EditTodoForm editTodo={editTask} task={todo} />
-        ) : (
+      {todos &&
+        todos.length > 0 &&
+        todos.map((todo) => (
           <Todo
             key={todo.id}
-            task={todo}
-            deleteTodo={deleteTodo}
-            editTodo={editTodo}
+            todo={todo}
             toggleComplete={toggleComplete}
+            removeTodo={removeTodo}
           />
-        )
-      )}
+        ))}
     </div>
   );
 };

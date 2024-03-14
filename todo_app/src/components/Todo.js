@@ -1,24 +1,18 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
-export const Todo = ({ task, toggleComplete, editTodo, deleteTodo }) => {
+export const Todo = ({ todo, toggleComplete, removeTodo }) => {
   return (
     <div className="Todo">
       <p
-        className={`${task.completed ? "completed" : "incompleted"}`}
-        onClick={() => toggleComplete(task.id)}
-        lassName={`${task.completed ? "completed" : ""}`}
+        className={`${todo.isCompleted ? "completed" : "incompleted"}`}
+        onClick={() => toggleComplete(todo)}
       >
-        {task.task}
+        {todo.task}
       </p>
       <div>
-        <FontAwesomeIcon
-          icon={faPenToSquare}
-          onClick={() => editTodo(task.id)}
-        />
-        <FontAwesomeIcon icon={faTrash} onClick={() => deleteTodo(task.id)} />
+        <FontAwesomeIcon icon={faTrash} onClick={() => removeTodo(todo)} />
       </div>
     </div>
   );
